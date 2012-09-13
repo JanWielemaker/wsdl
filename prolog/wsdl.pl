@@ -62,10 +62,11 @@ wsdl_ensure_loaded(Spec) :-
 %	  General properties of the binding. Style must be =document=
 %	  and Transport must be =http=.
 %
-%	  * wsdl_binding_operation(Binding, Action, Version, Input, Output)
+%	  * wsdl_binding_operation(Binding, Operation,
+%				   Action, Version, Input, Output)
 %	  Binding for a specific Operation. Action is the URL, and
 %	  Input/Output document the encoding style. This is always
-%	  = literal=
+%	  =literal=
 %
 %	  * wsdl_port(Binding, URL)
 %	  HTTP location to contact for Binding.
@@ -74,7 +75,7 @@ wsdl_read(Module:File) :-
 	retractall(Module:wsdl_message(_,_)),
 	retractall(Module:wsdl_operation(_,_,_,_)),
 	retractall(Module:wsdl_binding(_,_,_,_)),
-	retractall(Module:wsdl_binding_operation(_,_,_,_,_)),
+	retractall(Module:wsdl_binding_operation(_,_,_,_,_,_)),
 	retractall(Module:wsdl_port(_,_)),
 	load_structure(File, [DOM],
 		       [ dialect(xmlns),
@@ -200,16 +201,24 @@ extract_binding_operation(Operation, QName, Module, Options) :-
 	->  true
 	;   existence_error(wsdl_soap_namespace, NS)
 	),
+	(   xpath(Operation, /(_:operation(@name=OName)), _)
+	->  qualify_name(OName, QOp, Options)
+	;   QOp = QName
+	),
 	assertz(Module:wsdl_binding_operation(
-			   QName, QAction, Soap, InputUse, OutputUse)).
+			   QName, QOp, QAction, Soap, InputUse, OutputUse)).
 extract_binding_operation(Operation, QName, Module, Options) :-
 	xpath(Operation, _:operation(@location=Location), _),
 	xpath(Operation, _:input(self), Input),
 	xpath(Operation, _:output(self), Output),
 	verb_input(Input, InputUse),
 	verb_output(Output, OutputUse, Options), !,
+	(   xpath(Operation, /(_:operation(@name=OName)), _)
+	->  qualify_name(OName, QOp, Options)
+	;   QOp = QName
+	),
 	assertz(Module:wsdl_binding_operation(
-			   QName, Location, http, InputUse, OutputUse)).
+			   QName, QOp, Location, http, InputUse, OutputUse)).
 extract_binding_operation(Operation, QName, Module, Options) :-
 	print_message(error, failed(extract_binding_operation)),
 	gtrace,
@@ -268,7 +277,7 @@ wsdl_function(Module:PortType/Operation, Version, URL, Action, Input, Output) :-
 	Module:wsdl_binding(PortType, Binding, Document, HTTP),
 	assertion(Document == document),
 	assertion(HTTP == http),
-	Module:wsdl_binding_operation(Binding, Action, Version,
+	Module:wsdl_binding_operation(Binding, Operation, Action, Version,
 				      InputBinding, OutputBinding),
 	assertion(InputBinding == literal),
 	assertion(OutputBinding == literal),
