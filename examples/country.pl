@@ -25,6 +25,21 @@ sgml_write:xmlns(country, 'http://www.webserviceX.NET').
 :- initialization
 	wsdl_read('country.wsdl').
 
+%%	get_isd(+Country, -Reply)
+%
+%	Create a SOAP request to get the  ISD code of Country. The reply
+%	is a list of name-value  pairs   deduced  from  the response XML
+%	datatype. In this case, it contains 'GetISDResult'='<xml data>'.
+%	The content of the XML data is not  defined by the WSDL and must
+%	therefore be analysed in the application.
+%
+%	For example:
+%
+%	  ==
+%	  ?- get_isd('Germany', X).
+%	  X = ['GetISDResult'='<NewDataSet> <Table> <code>49</code> <name>Germany</name> </Table> <Table> <code>49</code> <name>Germany</name> </Table> </NewDataSet>'].
+%	  ==
+
 get_isd(Country, Reply) :-
 	Operation = ('http://www.webserviceX.NET':countrySoap) /
 	            ('http://www.webserviceX.NET':'GetISD'),
