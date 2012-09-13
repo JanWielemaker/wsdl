@@ -1,3 +1,32 @@
+/*  Part of SWI-Prolog WSDL pack
+
+    Author:        Jan Wielemaker
+    E-mail:        J.Wielemaker@cs.vu.nl
+    WWW:           http://www.swi-prolog.org
+    Copyright (C): 2012, VU University Amsterdam
+
+    This program is free software; you can redistribute it and/or
+    modify it under the terms of the GNU General Public License
+    as published by the Free Software Foundation; either version 2
+    of the License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public
+    License along with this library; if not, write to the Free Software
+    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+
+    As a special exception, if you link this library with other files,
+    compiled with a Free Software compiler, to produce an executable, this
+    library does not by itself cause the resulting executable to be covered
+    by the GNU General Public License. This exception does not however
+    invalidate any other reasons why the executable file might be covered by
+    the GNU General Public License.
+*/
+
 :- module(wsdl,
 	  [ wsdl_read/1,		% :WSDLFile
 	    wsdl_ensure_loaded/1,	% :WSDLFile
@@ -5,7 +34,9 @@
 	  ]).
 :- use_module(library(sgml)).
 :- use_module(library(xpath)).
+:- use_module(library(assoc)).
 :- use_module(library(option)).
+:- use_module(library(error)).
 :- use_module(xml_schema).
 
 
@@ -14,17 +45,20 @@
 	wsdl_ensure_loaded(:),
 	wsdl_function(:, ?, ?, ?, ?, ?).
 
+/** <module> Read WSDL files
 
-		 /*******************************
-		 *	      WDSL		*
-		 *******************************/
+This library reads WSDL files  using   wsdl_read/1,  which asserts facts
+about the WSDL interface in the   calling module. The provided interface
+can be queried using wsdl_function/6.
 
-/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+The current version concentrates on the   SOAP binding. There is partial
+support for other bindings.
+
 We assume (but verify) that:
 
 	- SOAP bindings use style =document= and transport =http=
 	- Parameters use =literal=
-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+*/
 
 ns('http://schemas.xmlsoap.org/wsdl/soap/',   soap11).
 ns('http://schemas.xmlsoap.org/wsdl/soap12/', soap12).
