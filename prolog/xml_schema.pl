@@ -68,7 +68,7 @@ How it works:
 
 @tbd	This library is very incomplete.  It currently only supports
 	a few XML primitive types (string, integer and boolean).  There
-	is no clear view how to deal with abiguities and documents that
+	is no clear view how to deal with ambiguities and documents that
 	demand complicated nesting.  It mainly supports simple SOAP messages
 	that typically require simple attribute-value pairs.
 */
